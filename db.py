@@ -1,14 +1,12 @@
 import redis
 
 
-class MyDB(object):
+class MyDB(redis.client.Redis):
     _db_connection = None
-    # _db_cur = None
 
-    def __init__(self):
+    def __init__(self, host, port, db):
         self._db_connection = redis.Redis(
-            host="localhost", port=6379, db=1)
-        # self._db_cur = self._db_connection.cursor()
+            host=host, port=port, db=db)
 
     def __del__(self):
         self._db_connection.client_kill("localhost:6379")
