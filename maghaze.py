@@ -1,0 +1,29 @@
+import logging
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+import configfile
+
+import commands
+
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(filename='./telegbot.log',
+                             format=LOG_FORMAT,
+                             filemode='w',
+                             level=logging.INFO)
+
+logger = logging.getLogger()
+
+token = configfile.get_token(config_fname="config.yaml")
+updates = Updater(token)
+
+logger.info("adding dispatchers")
+
+updates.dispatcher.add_handler(CommandHandler("start", commands.start))
+updates.dispatcher.add_handler(CommandHandler("help", commands.help))
+updates.dispatcher.add_handler(CommandHandler(
+    "addbutton", commands.addButton, pass_args=True))
+
+logger.info("all commands configured")
+
+
+updates.start_polling()
+updates.idle()

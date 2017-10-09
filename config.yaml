@@ -1,0 +1,21 @@
+bot:
+    bot_token: "447062430:AAHWTjd2u7cn-kLi4vLyoqX_-Jrom55e3ls"
+    help_message:
+        |
+        you can use these commands to control this bot
+        /start  starts the bot
+        /help  to see the CommandArguments
+        /login PASSWORD  to gain admin access
+        /logout turn back to a normal user
+        /senddoc send the files to the bot in the next message
+# fields in the database design
+database:
+    admins: admin_users         # a set?
+    default_admin: 'dinamyc'
+    password: admin_password    # string
+
+    regularUsers: users     # a set
+    numOfUsers: user_count      # integer
+
+    button: buttons             # list
+    document: documents         # list of files mapped to each buttton
