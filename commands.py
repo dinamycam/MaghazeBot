@@ -2,7 +2,7 @@ import db
 import redis
 import logging
 import configfile
-from telegram.update import Message
+import telegram
 
 # adding a logger to monitor crashes and easier debugging
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 database = db.MyDB('localhost', 6379, db=1)
 
 
-def start(bot, update):
+def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     rd = database.redis_obj
     rd.incr("user_count")
 
@@ -29,37 +29,48 @@ def start(bot, update):
                  .format(update.message.from_user))
 
 
-def help(bot, update):
+def help(bot: telegram.bot.Bot, update: telegram.update.Update):
     message = configfile.help_msg(config_fname="config.yaml")
     update.message.reply_text(message)
 
 
-def addButton(bot, update, arg):
+def addButton(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
     button = arg[0]
     rd = database.redis_obj
-    rd.sadd('buttons', button)
+    if rd.sismember('admin_users', update.message.from_user):
+        rd.sadd('buttons', button)
+    else:
+        update.message("Login First! only admins can add buttons")
 
 
-def delButton(bot, update, arg):
+def delButton(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
     button = arg[0]
     rd = database.redis_obj
-    try:
-        rd.srem('buttons', button)
-    except:
-        print("this button doesn't exist")
-
-
-def addAdmin(bot, update, arg):
-    admin_name = arg[0]
-    rd = database.redis_obj
-    if rd.sismember('admin_users', admin_name):
+    if rd.sismember('admin_users', update.message.from_user):
         try:
+            rd.srem('buttons', button)
+        except:
+            print("this button doesn't exist")
+    else:
+        update.message.reply_text("Login First!only admins can delete buttons")
+
+
+def addAdmin(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
+    admin_name = arg[0]
+    current_admin_uid = update.effective_user.id
+    current_admin_username = update.effective_user.username
+    rd = database.redis_obj
+    if rd.sismember('admin_users', current_admin_uid):
+        try:
+            logger.warning("{current_admin_username} tried to add a new admin")
             rd.sadd('admin_users', admin_name)
+            update.message.reply_text("User {admin_name} added successfully")
+            logger.warn("User {admin_name} was added successfully")
         except Exception as e:
             raise Exception
 
 
-def login(bot, update, arg):
+def login(bot, update: telegram.update.Update, arg):
     password = arg[0]
     rd = database.redis_obj
     if password == rd.get("admin_password"):
@@ -71,13 +82,13 @@ def login(bot, update, arg):
                                   wrong password or you're already logged in")
 
 
-def senddoc(bot, update):
+def senddoc(bot: telegram.bot.Bot, update: telegram.update.Update):
     # TODO: get docs from the user and store them in db
     pass
 
 
-def set_password(bot, update, arg):
+def set_password(bot, update: telegram.update.Update, arg):
     rd = database.redis_obj
     password = arg[0]
-    if rd.sismember("admin_users", update.message.chat_id):
+    if rd.sismember("admin_users", update.message.chat.id):
         rd.set("admin_password", password)
