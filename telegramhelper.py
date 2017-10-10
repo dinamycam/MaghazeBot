@@ -51,6 +51,7 @@ regularButtonsMenu(["pouya", "parham", "samad", "mohammad",
                     "zahra", "mahshid", "mohsen", "vajihe"], 3)
 
 
+# Similarity function for finding the button in case of typos
 def similarity(sourceset, sample):
     seq = list()
     sourcelist = list(sourceset)
