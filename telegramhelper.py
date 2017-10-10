@@ -1,6 +1,7 @@
 from telegram import KeyboardButton
 import logging
 import xlrd
+from difflib import *
 
 logger = logging.getLogger(__name__)
 
@@ -48,3 +49,16 @@ def regularButtonsMenu(buttons,
 regularButtonsMenu([1, 2, 3, 4, 5, 10, 12, 99, 0, 50, 6, 7], 2)
 regularButtonsMenu(["pouya", "parham", "samad", "mohammad",
                     "zahra", "mahshid", "mohsen", "vajihe"], 3)
+
+
+def similarity(sourceset, sample):
+    seq = list()
+    sourcelist = list(sourceset)
+    for elem in sourceset:
+        seq.append(SequenceMatcher(a=sample, b=elem))
+    ratios = [st.ratio() for st in seq]
+    print(ratios)
+    return sourcelist[ratios.index(max(ratios))]
+
+
+print(similarity({"pouya", "parham", "hassan", "mohammad"}, sample="pourya"))
