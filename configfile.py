@@ -18,7 +18,8 @@ def loadBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
     with open(config_fname, 'r') as config:
         data = yaml.safe_load(config)
         admin_password = data['database']['password']
-        database.set('admin_password', admin_password)
+        if not database.exists('admin_password'):
+            database.set('admin_password', admin_password)
         default_admin = data['database']['default_admin']
         database.sadd('admin_users', default_admin)
 
