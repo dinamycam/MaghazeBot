@@ -15,6 +15,9 @@ logger = logging.getLogger()
 token = configfile.get_token(config_fname="config.yaml")
 updates = Updater(token)
 
+database = commands.database.redis_obj
+configfile.loadBasicConfig(database, config_fname="config.yaml")
+
 logger.info("adding dispatchers")
 
 updates.dispatcher.add_handler(CommandHandler("start", commands.start))
@@ -27,6 +30,8 @@ updates.dispatcher.add_handler(CommandHandler(
     "login", commands.login, pass_args=True))
 updates.dispatcher.add_handler(CommandHandler(
     "setpass", commands.set_password, pass_args=True))
+updates.dispatcher.add_handler(CommandHandler(
+    "addadmin", commands.addAdmin, pass_args=True))
 
 logger.info("all commands configured")
 

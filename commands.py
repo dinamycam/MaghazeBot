@@ -48,7 +48,6 @@ def addButton(bot: telegram.bot.Bot,
         buttons_in_db = rd.get('buttons')
         keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db)
         reply_keyboard = telegram.ReplyKeyboardMarkup([keyboard_buttons])
-
         # TODO: add a part where the sent document would get saved in db
     else:
         update.message("Login First! only admins can add buttons")
@@ -78,10 +77,12 @@ def addAdmin(bot: telegram.bot.Bot,
             # where admins get created
             logger.warning("{current_admin_username} tried to add a new admin")
             rd.sadd('admin_users', admin_name)
-            update.message.reply_text("User {admin_name} added successfully")
+            update.message.reply_text("User {} added successfully"
+                                      .format(admin_name))
             logger.warn("User {admin_name} was added successfully")
         except Exception as e:
-            raise Exception
+            logger.error("{} failed to add an admin: {}"
+                         .format(current_admin_username, admin_name))
 
 
 def login(bot: telegram.bot.Bot,
@@ -102,8 +103,16 @@ def set_password(bot: telegram.bot.Bot,
                  update: telegram.update.Update, args):
     rd = database.redis_obj
     password = args[0]
-    if rd.sismember("admin_users", update.message.chat.id):
-        rd.set("admin_password", password)
+    print(password)
+    if rd.sismember("admin_users", update.effective_user.id):
+        print(update.message.chat_id)
+        stat = rd.set("admin_password", password)
+        if stat == 1:
+            logger.info("admin password updated successfully")
+            update.message.reply_text("admin password updated successfully")
+        else:
+            logger.warn("Database was not able to change password?!")
+            update.message.reply_text("Failed for some reason.try again later")
 
 
 def setlang(bot: telegram.bot.Bot,
