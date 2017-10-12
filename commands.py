@@ -104,7 +104,7 @@ def set_password(bot: telegram.bot.Bot,
     rd = database.redis_obj
     password = args[0]
     print(password)
-    if rd.sismember("admin_users", update.effective_user.id):
+    if rd.sismember("admin_users", update.effective_user.username):
         print(update.message.chat_id)
         stat = rd.set("admin_password", password)
         if stat == 1:
@@ -113,6 +113,9 @@ def set_password(bot: telegram.bot.Bot,
         else:
             logger.warn("Database was not able to change password?!")
             update.message.reply_text("Failed for some reason.try again later")
+    else:
+        logger.warn("non-admin user: {} tried to add admin!"
+                    .format(update.effective_user.username))
 
 
 def setlang(bot: telegram.bot.Bot,
