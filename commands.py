@@ -3,6 +3,7 @@ import redis
 import logging
 import configfile
 import telegram
+import telegramhelper
 
 # adding a logger to monitor crashes and easier debugging
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -25,8 +26,12 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     update.message.reply_text('خوش آمدید!')
     logger.info("start command used by {} "
                 .format(update.message.from_user.first_name))
-    logger.debug("new user << {} >>started the bot"
+    logger.debug("new user << {} >> started the bot"
                  .format(update.message.from_user))
+    # add all regular users to the database
+    rd.hset("users_hash", key=update.message.from_user,
+            value=update.message.chat_id)
+    rd.set("users_set", update.message.from_user)
 
 
 def help(bot: telegram.bot.Bot, update: telegram.update.Update):
@@ -34,17 +39,24 @@ def help(bot: telegram.bot.Bot, update: telegram.update.Update):
     update.message.reply_text(message)
 
 
-def addButton(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
-    button = arg[0]
+def addButton(bot: telegram.bot.Bot,
+              update: telegram.update.Update, args):
+    button = args[0]
     rd = database.redis_obj
     if rd.sismember('admin_users', update.message.from_user):
         rd.sadd('buttons', button)
+        buttons_in_db = rd.get('buttons')
+        keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db)
+        reply_keyboard = telegram.ReplyKeyboardMarkup([keyboard_buttons])
+
+        # TODO: add a part where the sent document would get saved in db
     else:
         update.message("Login First! only admins can add buttons")
 
 
-def delButton(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
-    button = arg[0]
+def delButton(bot: telegram.bot.Bot,
+              update: telegram.update.Update, args):
+    button = args[0]
     rd = database.redis_obj
     if rd.sismember('admin_users', update.message.from_user):
         try:
@@ -55,13 +67,15 @@ def delButton(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
         update.message.reply_text("Login First!only admins can delete buttons")
 
 
-def addAdmin(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
-    admin_name = arg[0]
-    current_admin_uid = update.effective_user.id
+def addAdmin(bot: telegram.bot.Bot,
+             update: telegram.update.Update, args):
+    admin_name = args[0]
+    # current_admin_uid = update.effective_user.id
     current_admin_username = update.effective_user.username
     rd = database.redis_obj
-    if rd.sismember('admin_users', current_admin_uid):
+    if rd.sismember('admin_users', current_admin_username):
         try:
+            # where admins get created
             logger.warning("{current_admin_username} tried to add a new admin")
             rd.sadd('admin_users', admin_name)
             update.message.reply_text("User {admin_name} added successfully")
@@ -70,25 +84,30 @@ def addAdmin(bot: telegram.bot.Bot, update: telegram.update.Update, arg):
             raise Exception
 
 
-def login(bot, update: telegram.update.Update, arg):
-    password = arg[0]
+def login(bot: telegram.bot.Bot,
+          update: telegram.update.Update, args):
+    entered_password = str(args[0])
     rd = database.redis_obj
-    if password == rd.get("admin_password"):
+    pssword = rd.get("admin_password").decode("utf-8")
+    if entered_password == pssword:
         # form_user should be user id
-        rd.sadd("loginusers", update.message.from_user)
+        rd.sadd("loggedin_users", update.message.from_user)
         update.message.reply_text("Login successful")
     else:
-        update.message.reply_text("Login Failure.\
-                                  wrong password or you're already logged in")
+        update.message.reply_text("Login Failure." +
+                                  "wrong password or you're already logged in")
 
 
-def senddoc(bot: telegram.bot.Bot, update: telegram.update.Update):
-    # TODO: get docs from the user and store them in db
-    pass
-
-
-def set_password(bot, update: telegram.update.Update, arg):
+def set_password(bot: telegram.bot.Bot,
+                 update: telegram.update.Update, args):
     rd = database.redis_obj
-    password = arg[0]
+    password = args[0]
     if rd.sismember("admin_users", update.message.chat.id):
         rd.set("admin_password", password)
+
+
+def setlang(bot: telegram.bot.Bot,
+            update: telegram.update.Update,
+            args):
+    # TODO: Implement this
+    pass
