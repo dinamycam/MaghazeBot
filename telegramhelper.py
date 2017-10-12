@@ -19,10 +19,6 @@ def docExtractor(filename, sheet_index=0):
     return ' '.join(documentlist)
 
 
-xldoc = docExtractor("SWITCH.xlsx", sheet_index=0)
-print(xldoc)
-
-
 def stringery(ls):
     if ls == []:
         return []
@@ -46,11 +42,6 @@ def regularButtonsMenu(buttons,
     return menu
 
 
-regularButtonsMenu([1, 2, 3, 4, 5, 10, 12, 99, 0, 50, 6, 7], 2)
-regularButtonsMenu(["pouya", "parham", "samad", "mohammad",
-                    "zahra", "mahshid", "mohsen", "vajihe"], 3)
-
-
 # Similarity function for finding the button in case of typos
 def similarity(sourceset, sample):
     seq = list()
@@ -62,4 +53,13 @@ def similarity(sourceset, sample):
     return sourcelist[ratios.index(max(ratios))]
 
 
-print(similarity({"pouya", "parham", "hassan", "mohammad"}, sample="pourya"))
+if __name__ == '__main__':
+    xldoc = docExtractor("SWITCH.xlsx", sheet_index=0)
+    print(xldoc)
+
+    regularButtonsMenu([1, 2, 3, 4, 5, 10, 12, 99, 0, 50, 6, 7], 2)
+    regularButtonsMenu(["pouya", "parham", "samad", "mohammad",
+                        "zahra", "mahshid", "mohsen", "vajihe"], 3)
+
+    print(similarity(
+        {"pouya", "parham", "hassan", "mohammad"}, sample="pourya"))
