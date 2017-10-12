@@ -29,6 +29,8 @@ updates.dispatcher.add_handler(CommandHandler(
 updates.dispatcher.add_handler(CommandHandler(
     "login", commands.login, pass_args=True))
 updates.dispatcher.add_handler(CommandHandler(
+    "logout", commands.logout))
+updates.dispatcher.add_handler(CommandHandler(
     "setpass", commands.set_password, pass_args=True))
 updates.dispatcher.add_handler(CommandHandler(
     "addadmin", commands.addAdmin, pass_args=True))

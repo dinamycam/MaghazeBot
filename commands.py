@@ -50,7 +50,7 @@ def addButton(bot: telegram.bot.Bot,
         reply_keyboard = telegram.ReplyKeyboardMarkup([keyboard_buttons])
         # TODO: add a part where the sent document would get saved in db
     else:
-        update.message("Login First! only admins can add buttons")
+        update.message.reply_text("Login First! only admins can add buttons")
 
 
 def delButton(bot: telegram.bot.Bot,
@@ -68,21 +68,25 @@ def delButton(bot: telegram.bot.Bot,
 
 def addAdmin(bot: telegram.bot.Bot,
              update: telegram.update.Update, args):
-    admin_name = args[0]
+    admin_name = args[0][1:]
     # current_admin_uid = update.effective_user.id
-    current_admin_username = update.effective_user.username
+    current_user = update.effective_user.username
     rd = database.redis_obj
-    if rd.sismember('admin_users', current_admin_username):
+    isadmin = rd.sismember('admin_users', current_user)
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isadmin and isloggedin:
         try:
             # where admins get created
-            logger.warning("{current_admin_username} tried to add a new admin")
+            logger.warning("{current_user} tried to add a new admin")
             rd.sadd('admin_users', admin_name)
             update.message.reply_text("User {} added successfully"
                                       .format(admin_name))
             logger.warn("User {admin_name} was added successfully")
         except Exception as e:
             logger.error("{} failed to add an admin: {}"
-                         .format(current_admin_username, admin_name))
+                         .format(current_user, admin_name))
+    else:
+        update.message.reply_text("Fuck off, weirdo!")
 
 
 def login(bot: telegram.bot.Bot,
@@ -92,11 +96,23 @@ def login(bot: telegram.bot.Bot,
     pssword = rd.get("admin_password").decode("utf-8")
     if entered_password == pssword:
         # form_user should be user id
-        rd.sadd("loggedin_users", update.message.from_user)
+        rd.sadd("loggedin_users", update.effective_user.username)
         update.message.reply_text("Login successful")
     else:
         update.message.reply_text("Login Failure." +
                                   "wrong password or you're already logged in")
+
+
+def logout(bot: telegram.bot.Bot,
+           update: telegram.update.Update):
+    rd = database.redis_obj
+    current_user = update.effective_user.username
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isloggedin:
+        rd.srem('loggedin_users', current_user)
+        update.message.reply_text("successfully logged out")
+    else:
+        update.message.reply_text("you weren't logged in. RIP")
 
 
 def set_password(bot: telegram.bot.Bot,
@@ -116,6 +132,7 @@ def set_password(bot: telegram.bot.Bot,
     else:
         logger.warn("non-admin user: {} tried to add admin!"
                     .format(update.effective_user.username))
+        update.message.reply_text("you are not an admin. FUCK OFF")
 
 
 def setlang(bot: telegram.bot.Bot,
