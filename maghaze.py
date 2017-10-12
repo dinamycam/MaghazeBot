@@ -21,6 +21,12 @@ updates.dispatcher.add_handler(CommandHandler("start", commands.start))
 updates.dispatcher.add_handler(CommandHandler("help", commands.help))
 updates.dispatcher.add_handler(CommandHandler(
     "addbutton", commands.addButton, pass_args=True))
+updates.dispatcher.add_handler(CommandHandler(
+    "delbutton", commands.delButton, pass_args=True))
+updates.dispatcher.add_handler(CommandHandler(
+    "login", commands.login, pass_args=True))
+updates.dispatcher.add_handler(CommandHandler(
+    "setpass", commands.set_password, pass_args=True))
 
 logger.info("all commands configured")
 
