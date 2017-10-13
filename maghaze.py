@@ -8,9 +8,9 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename='./telegbot.log',
                              format=LOG_FORMAT,
                              filemode='w',
-                             level=logging.INFO)
+                             level=logging.DEBUG)
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 token = configfile.get_token(config_fname="config.yaml")
 updates = Updater(token)
