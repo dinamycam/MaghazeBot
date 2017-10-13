@@ -36,6 +36,8 @@ updates.dispatcher.add_handler(CommandHandler(
     "addadmin", commands.addAdmin, pass_args=True))
 updates.dispatcher.add_handler(CommandHandler(
     "deladmin", commands.deleteAdmin, pass_args=True))
+updates.dispatcher.add_handler(CommandHandler(
+    "admins", commands.listAdmin))
 
 logger.info("all commands configured")
 

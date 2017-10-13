@@ -12,7 +12,7 @@ class MyDB(redis.client.Redis):
         self._db_connection.client_kill("localhost:6379")
 
     def get(self, field):
-        self._db_connection.get(field)
+        return self._db_connection.smembers(field)
 
     def save(self):
         self._db_connection.bgsave()

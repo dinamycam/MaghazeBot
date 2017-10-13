@@ -123,6 +123,12 @@ def deleteAdmin(bot: telegram.Bot,
             print(e)
 
 
+def listAdmin(bot: telegram.bot.Bot,
+              update: telegram.update.Update):
+    admin = database.get("admin_users")
+    update.message.reply_text(str(admin))
+
+
 def login(bot: telegram.bot.Bot,
           update: telegram.update.Update, args):
     entered_password = str(args[0])
