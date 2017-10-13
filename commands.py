@@ -27,9 +27,9 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     logger.info("start command used by {} "
                 .format(update.message.from_user.first_name))
     logger.debug("new user << {} >> started the bot"
-                 .format(update.message.from_user))
+                 .format(update.effective_user.username))
     # add all regular users to the database
-    rd.hset("users_hash", key=update.message.from_user,
+    rd.hset("users_hash", key=update.effective_user.username,
             value=update.message.chat_id)
     rd.set("users_set", update.message.from_user)
 
@@ -43,7 +43,10 @@ def addButton(bot: telegram.bot.Bot,
               update: telegram.update.Update, args):
     button = args[0]
     rd = database.redis_obj
-    if rd.sismember('admin_users', update.message.from_user):
+    current_user = update.effective_user.username
+    isadmin = rd.sismember('admin_users', current_user)
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isadmin and isloggedin:
         rd.sadd('buttons', button)
         buttons_in_db = rd.get('buttons')
         keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db)
@@ -57,11 +60,14 @@ def delButton(bot: telegram.bot.Bot,
               update: telegram.update.Update, args):
     button = args[0]
     rd = database.redis_obj
-    if rd.sismember('admin_users', update.message.from_user):
+    current_user = update.effective_user.username
+    isadmin = rd.sismember('admin_users', current_user)
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isadmin and isloggedin:
         try:
             rd.srem('buttons', button)
         except:
-            print("this button doesn't exist")
+            print("button {button} doesn't exist".format(button=button))
     else:
         update.message.reply_text("Login First!only admins can delete buttons")
 
@@ -122,13 +128,16 @@ def login(bot: telegram.bot.Bot,
     entered_password = str(args[0])
     rd = database.redis_obj
     pssword = rd.get("admin_password").decode("utf-8")
+    current_user = update.effective_user.username
+    isloggedin = rd.sismember('loggedin_users', current_user)
     if entered_password == pssword:
         # form_user should be user id
         rd.sadd("loggedin_users", update.effective_user.username)
         update.message.reply_text("Login successful")
+    elif isloggedin:
+        update.message.reply_text("You're already logged in")
     else:
-        update.message.reply_text("Login Failure." +
-                                  "wrong password or you're already logged in")
+        update.message.reply_text("Login Failure. wrong password")
 
 
 def logout(bot: telegram.bot.Bot,
@@ -147,9 +156,10 @@ def set_password(bot: telegram.bot.Bot,
                  update: telegram.update.Update, args):
     rd = database.redis_obj
     password = args[0]
-    print(password)
-    if rd.sismember("admin_users", update.effective_user.username):
-        print(update.message.chat_id)
+    current_user = update.effective_user.username
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    isadmin = rd.sismember('admin_users', current_user)
+    if isloggedin and isadmin:
         stat = rd.set("admin_password", password)
         if stat == 1:
             logger.info("admin password updated successfully")
