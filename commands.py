@@ -83,10 +83,35 @@ def addAdmin(bot: telegram.bot.Bot,
                                       .format(admin_name))
             logger.warn("User {admin_name} was added successfully")
         except Exception as e:
-            logger.error("{} failed to add an admin: {}"
+            logger.error("{} failed to ADD an admin: {}"
                          .format(current_user, admin_name))
     else:
         update.message.reply_text("Fuck off, weirdo!")
+
+
+def deleteAdmin(bot: telegram.Bot,
+                update: telegram.Update, args):
+
+    entered_user = args[0][1:]
+    current_user = update.effective_user.username
+    rd = database.redis_obj
+    isadmin = rd.sismember('admin_users', current_user)
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isadmin and isloggedin:
+        try:
+            # where admins get created
+            logger.warning("{current_user} tried to remove an admin")
+            stat = rd.srem('admin_users', entered_user)
+            if stat == 1:
+                update.message.reply_text("User {} added successfully"
+                                          .format(entered_user))
+                logger.warn("User {entered_user} was added successfully")
+            else:
+                update.message.reply_text("there was a problem doing that...")
+                logger.error("{} failed to REMOVE an admin: {}"
+                             .format(current_user, entered_user))
+        except Exception as e:
+            print(e)
 
 
 def login(bot: telegram.bot.Bot,
