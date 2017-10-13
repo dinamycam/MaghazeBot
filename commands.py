@@ -98,8 +98,10 @@ def deleteAdmin(bot: telegram.Bot,
     isadmin = rd.sismember('admin_users', current_user)
     isloggedin = rd.sismember('loggedin_users', current_user)
     if isadmin and isloggedin:
-        logger.warning("{current_user} tried to remove an admin")
-        print("{current_user} tried to remove an admin")
+        logger.warning("{current_user} tried to remove an admin"
+                       .format(current_user=current_user))
+        print("{current_user} tried to remove an admin"
+              .format(current_user=current_user))
         try:
             # where admins get created
             stat = rd.srem('admin_users', entered_user)
