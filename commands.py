@@ -37,7 +37,7 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
 
     # show keyboard
     buttons_in_db = list(rd.smembers('buttons'))
-    print(buttons_in_db)
+    buttons_in_db = telegramhelper.utf_decode(rd.smembers('buttons'))
     keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
                                                          n_cols=3)
     reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
@@ -61,8 +61,7 @@ def addButton(bot: telegram.bot.Bot,
     if isadmin and isloggedin:
         rd.sadd('buttons', button)
         rd.hset('buttons_hash', button, filename)
-        buttons_in_db = list(rd.smembers('buttons'))
-        print(buttons_in_db)
+        buttons_in_db = telegramhelper.utf_decode(rd.smembers('buttons'))
         keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
                                                              n_cols=3)
         reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)

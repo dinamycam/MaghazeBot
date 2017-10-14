@@ -38,7 +38,7 @@ def regularButtonsMenu(buttons,
     if footer_buttons:
         menu.append(footer_buttons)
     logger.debug("header and footer buttons added")
-    print(menu)
+    # print(menu)
     return menu
 
 
@@ -49,8 +49,15 @@ def similarity(sourceset, sample):
     for elem in sourceset:
         seq.append(SequenceMatcher(a=sample, b=elem))
     ratios = [st.ratio() for st in seq]
-    print(ratios)
+    # print(ratios)
     return sourcelist[ratios.index(max(ratios))]
+
+
+def utf_decode(dataset):
+    processed_list = list()
+    for el in dataset:
+        processed_list.append(el.decode("utf-8"))
+    return processed_list
 
 
 if __name__ == '__main__':
