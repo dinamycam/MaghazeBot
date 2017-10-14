@@ -1,6 +1,8 @@
 import logging
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from telegram.ext import MessageHandler, Filters
 import configfile
+import telegram
 
 import commands
 
@@ -20,6 +22,12 @@ configfile.loadBasicConfig(database, config_fname="config.yaml")
 
 logger.info("adding dispatchers")
 
+# document receiver
+dochandler = MessageHandler(Filters.document,
+                            commands.getdoc)
+updates.dispatcher.add_handler(dochandler)
+
+# adding command handlers
 updates.dispatcher.add_handler(CommandHandler("start", commands.start))
 updates.dispatcher.add_handler(CommandHandler("help", commands.help))
 updates.dispatcher.add_handler(CommandHandler(
@@ -38,6 +46,7 @@ updates.dispatcher.add_handler(CommandHandler(
     "deladmin", commands.deleteAdmin, pass_args=True))
 updates.dispatcher.add_handler(CommandHandler(
     "admins", commands.listAdmin))
+
 
 logger.info("all commands configured")
 

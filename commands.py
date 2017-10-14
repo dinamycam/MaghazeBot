@@ -1,8 +1,10 @@
 import db
+import os
 import redis
 import logging
 import configfile
 import telegram
+from telegram.error import NetworkError, Unauthorized
 import telegramhelper
 
 # adding a logger to monitor crashes and easier debugging
@@ -42,18 +44,45 @@ def help(bot: telegram.bot.Bot, update: telegram.update.Update):
 def addButton(bot: telegram.bot.Bot,
               update: telegram.update.Update, args):
     button = args[0]
+    filename = args[1]
     rd = database.redis_obj
     current_user = update.effective_user.username
     isadmin = rd.sismember('admin_users', current_user)
     isloggedin = rd.sismember('loggedin_users', current_user)
     if isadmin and isloggedin:
         rd.sadd('buttons', button)
-        buttons_in_db = rd.get('buttons')
-        keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db)
+        buttons_in_db = list(rd.smembers('buttons'))
+        keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
+                                                             n_cols=3)
         reply_keyboard = telegram.ReplyKeyboardMarkup([keyboard_buttons])
+        update.message.reply_text("Button added. now send the file:")
         # TODO: add a part where the sent document would get saved in db
+        # for an_update in bot.get_updates(timeout=30):
+        #     print(update.message.text)
+        #     # chat_id is required to reply to any message
+        #     # chat_id = update.message.chat_id
+        #     if an_update.message.text == "test":
+        #         # Reply to the message
+        #         an_update.message.reply_text("Ok!")
+        #         return
     else:
         update.message.reply_text("Login First! only admins can add buttons")
+
+
+def getdoc(bot: telegram.Bot,
+           update: telegram.Update):
+    # update.message.reply_text("got it! now going for the database")
+    docid = update.message.document.file_id
+    # store original filename
+    doc_name = update.message.document.file_name
+    document = bot.get_file(docid)
+    # chanding to the data directory
+    os.chdir("./data")
+    doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
+    # returning to the original dir
+    os.chdir("..")
+    document.download(out=doc_file)
+    update.message.reply_text("Ok I got it.")
 
 
 def delButton(bot: telegram.bot.Bot,
