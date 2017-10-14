@@ -1,10 +1,12 @@
-import db
-import os
-import redis
 import logging
-import configfile
+import os
+
+import redis
 import telegram
 from telegram.error import NetworkError, Unauthorized
+
+import configfile
+import db
 import telegramhelper
 
 # adding a logger to monitor crashes and easier debugging
@@ -25,7 +27,6 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     rd = database.redis_obj
     rd.incr("user_count")
 
-    update.message.reply_text('خوش آمدید!')
     logger.info("start command used by {} "
                 .format(update.message.from_user.first_name))
     logger.debug("new user << {} >> started the bot"
@@ -42,6 +43,7 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
                                                          n_cols=3)
     reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
     bot.send_message(chat_id=update.message.chat_id,
+                     text="خوش آمدید!",
                      reply_markup=reply_keyboard)
 
 
@@ -105,8 +107,9 @@ def delButton(bot: telegram.bot.Bot,
     if isadmin and isloggedin:
         try:
             rd.srem('buttons', button)
+            rd.hdel('buttons_hash', button)
         except:
-            print("button {button} doesn't exist".format(button=button))
+            print("the {button} doesn't exist".format(button=button))
     else:
         update.message.reply_text("Login First!only admins can delete buttons")
 
