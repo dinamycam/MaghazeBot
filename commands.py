@@ -35,6 +35,15 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
             value=update.message.chat_id)
     rd.set("users_set", update.message.from_user)
 
+    # show keyboard
+    buttons_in_db = list(rd.smembers('buttons'))
+    print(buttons_in_db)
+    keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
+                                                         n_cols=3)
+    reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
+    bot.send_message(chat_id=update.message.chat_id,
+                     reply_markup=reply_keyboard)
+
 
 def help(bot: telegram.bot.Bot, update: telegram.update.Update):
     message = configfile.help_msg(config_fname="config.yaml")
@@ -51,38 +60,40 @@ def addButton(bot: telegram.bot.Bot,
     isloggedin = rd.sismember('loggedin_users', current_user)
     if isadmin and isloggedin:
         rd.sadd('buttons', button)
+        rd.hset('buttons_hash', button, filename)
         buttons_in_db = list(rd.smembers('buttons'))
+        print(buttons_in_db)
         keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
                                                              n_cols=3)
-        reply_keyboard = telegram.ReplyKeyboardMarkup([keyboard_buttons])
-        update.message.reply_text("Button added. now send the file:")
-        # TODO: add a part where the sent document would get saved in db
-        # for an_update in bot.get_updates(timeout=30):
-        #     print(update.message.text)
-        #     # chat_id is required to reply to any message
-        #     # chat_id = update.message.chat_id
-        #     if an_update.message.text == "test":
-        #         # Reply to the message
-        #         an_update.message.reply_text("Ok!")
-        #         return
+        reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Button added. now send the file:",
+                         reply_markup=reply_keyboard)
     else:
         update.message.reply_text("Login First! only admins can add buttons")
 
 
 def getdoc(bot: telegram.Bot,
            update: telegram.Update):
-    # update.message.reply_text("got it! now going for the database")
-    docid = update.message.document.file_id
-    # store original filename
-    doc_name = update.message.document.file_name
-    document = bot.get_file(docid)
-    # chanding to the data directory
-    os.chdir("./data")
-    doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
-    # returning to the original dir
-    os.chdir("..")
-    document.download(out=doc_file)
-    update.message.reply_text("Ok I got it.")
+    rd = database.redis_obj
+    current_user = update.effective_user.username
+    isadmin = rd.sismember('admin_users', current_user)
+    isloggedin = rd.sismember('loggedin_users', current_user)
+    if isadmin and isloggedin:
+        # update.message.reply_text("got it! now going for the database")
+        docid = update.message.document.file_id
+        # store original filename
+        doc_name = update.message.document.file_name
+        document = bot.get_file(docid)
+        # chanding to the data directory
+        os.chdir("./data")
+        doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
+        # returning to the original dir
+        os.chdir("..")
+        document.download(out=doc_file)
+        update.message.reply_text("Ok I got it.")
+    else:
+        update.message.reply_text("Only admins can send files")
 
 
 def delButton(bot: telegram.bot.Bot,
