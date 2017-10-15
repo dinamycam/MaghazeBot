@@ -230,10 +230,11 @@ def keyboard_press(bot, update):
         file_name = rd.hget('buttons_hash', button_text)
         file_name = file_name.decode('utf-8')
         print(file_name)
-    os.chdir('./data')
-    button_text = telegramhelper.docExtractor(file_name, sheet_index=0)
-    os.chdir('..')
-    print(button_text)
+        os.chdir('./data')
+        print(os.getcwd())
+        button_text = telegramhelper.docExtractor(file_name, sheet_index=0)
+        os.chdir('..')
+        print(button_text)
     bot.send_message(chat_id=update.message.chat_id,
                      text=button_text)
 

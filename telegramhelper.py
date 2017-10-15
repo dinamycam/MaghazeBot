@@ -63,11 +63,11 @@ def utf_decode(dataset):
 
 
 if __name__ == '__main__':
-    import os
-    os.chdir('./data')
-    xldoc = docExtractor("wires.xlsx", sheet_index=0)
-    os.chdir('..')
-    print(xldoc)
+    # import os
+    # os.chdir('./data')
+    # xldoc = docExtractor("wires.xlsx", sheet_index=0)
+    # os.chdir('..')
+    # print(xldoc)
 
     regularButtonsMenu([1, 2, 3, 4, 5, 10, 12, 99, 0, 50, 6, 7], 2)
     regularButtonsMenu(["pouya", "parham", "samad", "mohammad",
