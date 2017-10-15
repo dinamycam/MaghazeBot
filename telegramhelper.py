@@ -20,6 +20,8 @@ def docExtractor(filename, sheet_index=0):
 
 
 def stringery(ls):
+    # TODO: keyboard buttons built using strings are really big.
+    # should try and use the KeyboardButton type.
     if ls == []:
         return []
     return [str(ls[0])] + stringery(ls[1:])
