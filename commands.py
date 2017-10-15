@@ -177,6 +177,14 @@ def listAdmin(bot: telegram.bot.Bot,
     update.message.reply_text(str(admin))
 
 
+def listButton(bot: telegram.bot.Bot,
+               update: telegram.update.Update):
+        rd = database.redis_obj
+        buttons_dic = rd.hgetall('buttons_hash')
+        buttons_dic = telegramhelper.utf_decode(buttons_dic)
+        update.message.reply_text(str(buttons_dic))
+
+
 def login(bot: telegram.bot.Bot,
           update: telegram.update.Update, args):
     entered_password = str(args[0])
