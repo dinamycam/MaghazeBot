@@ -23,9 +23,12 @@ configfile.loadBasicConfig(database, config_fname="config.yaml")
 logger.info("adding dispatchers")
 
 # document receiver
-dochandler = MessageHandler(Filters.document,
-                            commands.getdoc)
-updates.dispatcher.add_handler(dochandler)
+document_handler = MessageHandler(Filters.document,
+                                  commands.getdoc)
+keyboard_handler = MessageHandler(Filters.text,
+                                  commands.keyboard_press)
+updates.dispatcher.add_handler(document_handler)
+updates.dispatcher.add_handler(keyboard_handler)
 
 # adding command handlers
 updates.dispatcher.add_handler(CommandHandler("start", commands.start))
