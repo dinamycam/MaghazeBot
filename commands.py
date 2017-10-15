@@ -87,6 +87,7 @@ def getdoc(bot: telegram.Bot,
         doc_name = update.message.document.file_name
         document = bot.get_file(docid)
         # chanding to the data directory
+        print(os.getcwd())
         os.chdir("./data")
         doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
         # returning to the original dir
@@ -231,7 +232,6 @@ def keyboard_press(bot, update):
         file_name = file_name.decode('utf-8')
         print(file_name)
         os.chdir('./data')
-        print(os.getcwd())
         button_text = telegramhelper.docExtractor(file_name, sheet_index=0)
         os.chdir('..')
         print(button_text)
