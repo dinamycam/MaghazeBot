@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # init redis database
 database = db.MyDB('localhost', 6379, db=1)
+projectpath = database.redis_obj.get('projectpath')
 
 
 def start(bot: telegram.bot.Bot, update: telegram.update.Update):
@@ -87,12 +88,12 @@ def getdoc(bot: telegram.Bot,
         doc_name = update.message.document.file_name
         document = bot.get_file(docid)
         # chanding to the data directory
-        print(os.getcwd())
-        os.chdir("./data")
+        os.chdir(os.path.join(projectpath, 'data'))
         doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
         # returning to the original dir
-        os.chdir("..")
+        os.chdir(projectpath)
         document.download(out=doc_file)
+        doc_file.close()
         update.message.reply_text("Ok I got it.")
     else:
         update.message.reply_text("Only admins can send files")
@@ -224,17 +225,17 @@ def set_password(bot: telegram.bot.Bot,
 
 def keyboard_press(bot, update):
     button_text = update.message.text
-    print(button_text)
+    rd = database.redis_obj
+    # print(button_text)
 
     rd = database.redis_obj
     if rd.sismember('buttons', button_text):
         file_name = rd.hget('buttons_hash', button_text)
         file_name = file_name.decode('utf-8')
-        print(file_name)
-        os.chdir('./data')
+
+        os.chdir(os.path.join(projectpath, 'data'))
         button_text = telegramhelper.docExtractor(file_name, sheet_index=0)
-        os.chdir('..')
-        print(button_text)
+        os.chdir(projectpath)
     bot.send_message(chat_id=update.message.chat_id,
                      text=button_text)
 

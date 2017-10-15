@@ -1,7 +1,8 @@
-import yaml
 import logging
-import redis
+import os
 
+import redis
+import yaml
 
 # Enable logging
 logging.basicConfig(
@@ -13,8 +14,7 @@ logger = logging.getLogger(__name__)
 # Set some db vars, getting from the config file
 
 
-def loadBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
-
+def botBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
     with open(config_fname, 'r') as config:
         data = yaml.safe_load(config)
         admin_password = data['database']['password']
@@ -22,6 +22,8 @@ def loadBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
             database.set('admin_password', admin_password)
         default_admin = data['database']['default_admin']
         database.sadd('admin_users', default_admin)
+    # set the route path of project for using as a base for changing folder
+    database.set('projectpath', os.getcwd())
 
 
 def get_token(config_fname="config.yaml", shell_var="Bot_token"):
