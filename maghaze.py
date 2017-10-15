@@ -1,10 +1,11 @@
-import logging
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
-from telegram.ext import MessageHandler, Filters
-import configfile
-import telegram
-
 import commands
+import logging
+
+import telegram
+from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
+                          MessageHandler, Updater)
+
+import configfile
 
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename='./telegbot.log',

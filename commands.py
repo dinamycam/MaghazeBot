@@ -43,7 +43,8 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     buttons_in_db = telegramhelper.utf_decode(rd.smembers('buttons'))
     keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
                                                          n_cols=3)
-    reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
+    reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons,
+                                                  resize_keyboard=True)
     bot.send_message(chat_id=update.message.chat_id,
                      text="خوش آمدید!",
                      reply_markup=reply_keyboard)
@@ -68,7 +69,8 @@ def addButton(bot: telegram.bot.Bot,
         buttons_in_db = telegramhelper.utf_decode(rd.smembers('buttons'))
         keyboard_buttons = telegramhelper.regularButtonsMenu(buttons_in_db,
                                                              n_cols=3)
-        reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons)
+        reply_keyboard = telegram.ReplyKeyboardMarkup(keyboard_buttons,
+                                                      resize_keyboard=True)
         bot.send_message(chat_id=update.message.chat_id,
                          text="Button added. now send the file:",
                          reply_markup=reply_keyboard)
