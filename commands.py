@@ -36,7 +36,7 @@ def start(bot: telegram.bot.Bot, update: telegram.update.Update):
     # add all regular users to the database
     rd.hset("users_hash", key=update.effective_user.username,
             value=update.message.chat_id)
-    rd.set("users_set", update.message.from_user)
+    rd.sadd("users_set", update.effective_user.username)
 
     # show keyboard
     buttons_in_db = list(rd.smembers('buttons'))
@@ -177,8 +177,15 @@ def deleteAdmin(bot: telegram.Bot,
 
 def listAdmin(bot: telegram.bot.Bot,
               update: telegram.update.Update):
+    rd = database.redis_obj
     admin = database.get("admin_users")
-    update.message.reply_text(str(admin))
+    admin_str = str(telegramhelper.utf_decode(admin))
+
+    users = rd.scard("users_set")
+    user_count = str(users)
+    update.message.reply_text(admin_str +
+                              "\n And also,The User Count:\n" +
+                              user_count)
 
 
 def listButton(bot: telegram.bot.Bot,

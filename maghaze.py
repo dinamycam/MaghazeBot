@@ -11,7 +11,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename='./telegbot.log',
                              format=LOG_FORMAT,
                              filemode='w',
-                             level=logging.DEBUG)
+                             level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 

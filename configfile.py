@@ -21,7 +21,7 @@ def botBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
         if not database.exists('admin_password'):
             database.set('admin_password', admin_password)
         default_admin = data['database']['default_admin']
-        database.sadd('admin_users', default_admin)
+        database.sadd('admin_users', default_admin[1:])
     # set the route path of project for using as a base for changing folder
     database.set('projectpath', os.getcwd())
 
