@@ -31,7 +31,7 @@ def get_token(config_fname="config.yaml", shell_var="Bot_token"):
         with open(config_fname, 'r') as fobj:
             data = yaml.safe_load(fobj)
         token = data['bot']['bot_token']
-        print(token)
+        # print(token)
         return token
     except:
         return None

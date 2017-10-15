@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 token = configfile.get_token(config_fname="config.yaml")
 updates = Updater(token)
 
-database = commands.database.redis_obj
-configfile.botBasicConfig(database, config_fname="config.yaml")
+redis_db = commands.database.redis_obj
+configfile.botBasicConfig(redis_db, config_fname="config.yaml")
 
 logger.info("adding dispatchers")
 

@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # init redis database
 database = db.MyDB('localhost', 6379, db=1)
 projectpath = database.redis_obj.get('projectpath')
+projectpath = projectpath.decode('utf-8')
 
 
 def start(bot: telegram.bot.Bot, update: telegram.update.Update):
@@ -88,6 +89,7 @@ def getdoc(bot: telegram.Bot,
         doc_name = update.message.document.file_name
         document = bot.get_file(docid)
         # chanding to the data directory
+        os.chdir(projectpath)
         os.chdir(os.path.join(projectpath, 'data'))
         doc_file = open(os.path.join(os.getcwd(), doc_name), mode='wb')
         # returning to the original dir
