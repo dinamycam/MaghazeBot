@@ -2,7 +2,7 @@ import logging
 from difflib import *
 
 import xlrd
-from telegram import KeyboardButton
+from telegram import KeyboardButton, ReplyKeyboardMarkup
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,15 @@ def regularButtonsMenu(buttons,
     logger.debug("header and footer buttons added")
     # print(menu)
     return menu
+
+
+def KeyboardMarkupBuilder(rd):
+        buttons_in_db = utf_decode(rd.smembers('buttons'))
+        keyboard_buttons = regularButtonsMenu(buttons_in_db,
+                                              n_cols=4)
+        reply_keyboard = ReplyKeyboardMarkup(keyboard_buttons,
+                                             resize_keyboard=True)
+        return reply_keyboard
 
 
 # Similarity function for finding the button in case of typos

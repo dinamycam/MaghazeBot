@@ -111,14 +111,17 @@ def delButton(bot: telegram.bot.Bot,
     isadmin = rd.sismember('admin_users', current_user)
     isloggedin = rd.sismember('loggedin_users', current_user)
     if isadmin and isloggedin:
-        rd.srem('buttons', button)
-        rd.hdel('buttons_hash', button)
         if not rd.sismember('buttons', button):
-            update.message.reply_text("Button deleted successfully")
-        else:
             update.message.reply_text("{} doesn't exist".format(button))
-    else:
-        update.message.reply_text("Login First!only admins can delete buttons")
+        # checking if the button got deleted
+        elif rd.sismember('buttons', button):
+            rd.srem('buttons', button)
+            rd.hdel('buttons_hash', button)
+            bot.send_message(text="Button deleted successfully",
+                             reply_markup=telegramhelper.KeyboardMarkupBuilder(rd),
+                             chat_id=update.message.chat_id)
+        else:
+            update.message.reply_text("Login First!only admins can delete buttons")
 
 
 def addAdmin(bot: telegram.bot.Bot,
