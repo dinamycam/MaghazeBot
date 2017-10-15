@@ -50,5 +50,12 @@ def help_msg(config_fname="config.yaml"):
         raise "config file error"
 
 
+def admin_help_msg(config_fname="config.yaml"):
+    try:
+        with open(config_fname, 'r') as fobj:
+            data = yaml.safe_load(fobj)
+            return data['bot']['admin_help_message']
+    except:
+        raise "config file error"
 # help_message = help_msg(config_fname="config.yaml")
 # print(help_message)

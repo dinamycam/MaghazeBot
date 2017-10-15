@@ -184,12 +184,14 @@ def login(bot: telegram.bot.Bot,
     pssword = rd.get("admin_password").decode("utf-8")
     current_user = update.effective_user.username
     isloggedin = rd.sismember('loggedin_users', current_user)
-    if entered_password == pssword:
+    if isloggedin:
+        update.message.reply_text("You're already logged in")
+        update.message.reply_text(configfile.admin_help_msg())
+    elif entered_password == pssword:
         # form_user should be user id
         rd.sadd("loggedin_users", update.effective_user.username)
         update.message.reply_text("Login successful")
-    elif isloggedin:
-        update.message.reply_text("You're already logged in")
+        update.message.reply_text(configfile.admin_help_msg())
     else:
         update.message.reply_text("Login Failure. wrong password")
 
