@@ -1,12 +1,15 @@
 import logging
 import os
 
-import redis
 import telegram
+from telegram import ReplyKeyboardMarkup
 from telegram.error import NetworkError, Unauthorized
+from telegram.ext import (CommandHandler, ConversationHandler, Filters,
+                          MessageHandler, RegexHandler, Updater)
 
 import configfile
 import db
+import redis
 import telegramhelper
 
 # adding a logger to monitor crashes and easier debugging
@@ -14,7 +17,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename='./telegbot.log',
                     format=LOG_FORMAT,
                     filemode='w',
-                    level=logging.DEBUG)
+                    level=logging.ERROR)
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +123,8 @@ def delButton(bot: telegram.bot.Bot,
             bot.send_message(text="Button deleted successfully",
                              reply_markup=telegramhelper.KeyboardMarkupBuilder(rd),
                              chat_id=update.message.chat_id)
-        else:
-            update.message.reply_text("Login First!only admins can delete buttons")
+    else:
+        update.message.reply_text("Login first! only admins can delete button")
 
 
 def addAdmin(bot: telegram.bot.Bot,
@@ -129,6 +132,7 @@ def addAdmin(bot: telegram.bot.Bot,
     admin_name = args[0][1:]
     # current_admin_uid = update.effective_user.id
     current_user = update.effective_user.username
+
     rd = database.redis_obj
     isadmin = rd.sismember('admin_users', current_user)
     isloggedin = rd.sismember('loggedin_users', current_user)
@@ -263,6 +267,83 @@ def keyboard_press(bot, update):
         os.chdir(projectpath)
     bot.send_message(chat_id=update.message.chat_id,
                      text=button_text)
+
+
+# Functions for handling a conversation about time.
+
+CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
+
+reply_keyboard = [['Hour', 'Minute', 'Month', 'Day'],
+                  ['Num of Repeats', 'Full Date...'],
+                  ['Done']]
+stmk = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+
+def data2str(user_data):
+    facts = list()
+
+    for key, value in user_data.items():
+        facts.append('{} - {}'.format(key, value))
+
+    return "\n".join(facts).join(['\n', '\n'])
+
+
+def settime(bot, update):
+    update.message.reply_text(
+        "set a date and time for sending your message in groups and "
+        " chats\n"
+        "Complete each section for me...",
+        reply_markup=stmk)
+
+    return CHOOSING
+
+
+def regular_choice(bot, update, user_data):
+    text = update.message.text
+    user_data['choice'] = text
+    update.message.reply_text(
+        "The {}? Ok, I'm ready. Enter!".format(text.lower()))
+
+    return TYPING_REPLY
+
+
+def custom_choice(bot, update):
+    update.message.reply_text('Okay. Send the date in correct format'
+                              'for example "2017-10-21 02:39:47"')
+
+    return TYPING_CHOICE
+
+
+def received_information(bot, update, user_data):
+    text = update.message.text
+    category = user_data['choice']
+    user_data[category] = text
+    del user_data['choice']
+
+    update.message.reply_text("What you Already told me:"
+                              "{}"
+                              "tell me more,"
+                              "or change something you have told.".format(
+                                  data2str(user_data)), reply_markup=stmk)
+
+    return CHOOSING
+
+
+def done(bot, update, user_data):
+    if 'choice' in user_data:
+        del user_data['choice']
+
+    update.message.reply_text("Configuration completed:"
+                              "{}"
+                              "Until next time :)".format(data2str(user_data)))
+
+    user_data.clear()
+    return ConversationHandler.END
+
+
+def error(bot, update, error):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def setlang(bot: telegram.bot.Bot,

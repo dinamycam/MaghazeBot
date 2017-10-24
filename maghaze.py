@@ -1,9 +1,11 @@
 import commands
+from commands import CHOOSING, TYPING_REPLY, TYPING_CHOICE
 import logging
 
 import telegram
-from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
-                          MessageHandler, Updater)
+from telegram.ext import (CallbackQueryHandler, CommandHandler,
+                          ConversationHandler, Filters, MessageHandler,
+                          RegexHandler, Updater)
 
 import configfile
 
@@ -11,7 +13,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename='./telegbot.log',
                              format=LOG_FORMAT,
                              filemode='w',
-                             level=logging.INFO)
+                             level=logging.ERROR)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,32 @@ updates.dispatcher.add_handler(CommandHandler(
     "buttons", commands.listButton))
 
 
+conv_handler = ConversationHandler(
+    entry_points=[CommandHandler('settime', commands.settime)],
+
+    states={
+        CHOOSING: [RegexHandler('^(Month|Day|Hour|Minute|Num of Repeats)$',
+                                commands.regular_choice,
+                                pass_user_data=True),
+                   RegexHandler('^Full Date...$',
+                                commands.custom_choice),
+                   ],
+        TYPING_CHOICE: [MessageHandler(Filters.text,
+                                       commands.regular_choice,
+                                       pass_user_data=True),
+                        ],
+        TYPING_REPLY: [MessageHandler(Filters.text,
+                                      commands.received_information,
+                                      pass_user_data=True),
+                       ],
+    },
+    fallbacks=[RegexHandler('^Done$', commands.done, pass_user_data=True)]
+)
+
+updates.dispatcher.add_handler(conv_handler)
+
+# log all errors
+updates.dispatcher.add_error_handler(commands.error)
 logger.info("all commands configured")
 
 
