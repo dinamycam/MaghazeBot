@@ -31,7 +31,10 @@ document_handler = MessageHandler(Filters.document,
 keyboard_handler = MessageHandler(Filters.text,
                                   commands.keyboard_press)
 updates.dispatcher.add_handler(document_handler)
+logger.info("document handler added")
+print("document handler added")
 updates.dispatcher.add_handler(keyboard_handler)
+logger.info("keyboard handler added")
 
 # adding command handlers
 updates.dispatcher.add_handler(CommandHandler("start", commands.start))

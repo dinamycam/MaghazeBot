@@ -101,9 +101,11 @@ def getdoc(bot: telegram.Bot,
         os.chdir(projectpath)
         document.download(out=doc_file)
         doc_file.close()
+        print("Got a file")
         update.message.reply_text("Ok I got it.")
     else:
         update.message.reply_text("Only admins can send files")
+        print("Only admins can send files")
 
 
 def delButton(bot: telegram.bot.Bot,
