@@ -18,8 +18,13 @@ def botBasicConfig(database: redis.client.Redis, config_fname="config.yaml"):
     with open(config_fname, 'r') as config:
         data = yaml.safe_load(config)
         admin_password = data['database']['password']
+
         if not database.exists('admin_password'):
             database.set('admin_password', admin_password)
+
+        if not database.exists('projectpath'):
+            database.set('projectpath', os.getcwd())
+
         default_admin = data['database']['default_admin']
         database.sadd('admin_users', default_admin[1:])
     # set the route path of project for using as a base for changing folder
@@ -33,8 +38,12 @@ def get_token(config_fname="config.yaml", shell_var="Bot_token"):
         token = data['bot']['bot_token']
         # print(token)
         return token
-    except:
+    except Exception as e:
         return None
+    sh_token = os.getenv(shell_var)
+    if sh_token is not None:
+        return sh_token
+    return ''
 
 
 # tkn = get_token(config_fname="config.yaml")
